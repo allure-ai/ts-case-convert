@@ -9,6 +9,9 @@ import {
   toPascal,
   objectToPascal,
   ToPascal,
+  objectToSnakeNonRecursive,
+  objectToCamelNonRecursive,
+  objectToPascalNonRecursive,
 } from '../src/caseConvert';
 
 describe('Property name converter', () => {
@@ -45,6 +48,39 @@ describe('Property name converter', () => {
     expect(testToCamel.aKebab).toEqual('k1');
   });
 
+  it('converts to camelCase non-recursively', () => {
+    const testToCamel = objectToCamelNonRecursive({
+      hello_world: 'helloWorld',
+      a_number: 5,
+      an_array: [1, 2, 4],
+      null_object: null,
+      undef_object: undefined,
+      an_array_of_objects: [{ a_b: 'ab', a_c: 'ac' }],
+      an_object: {
+        a_1: 'a1',
+        a_2: 'a2',
+        a_3: {
+          b_4: 'b4',
+        },
+      },
+      ['a-kebab']: 'k1',
+    });
+
+    expect('helloWorld' in testToCamel).toStrictEqual(true);
+    expect('hello_world' in testToCamel).not.toStrictEqual(true);
+    expect(testToCamel.aNumber).toEqual(5);
+    expect(testToCamel.helloWorld).toEqual('helloWorld');
+    expect(testToCamel.anArray).toEqual([1, 2, 4]);
+    expect(testToCamel.nullObject).toBeNull();
+    expect(testToCamel.undefObject).toBeUndefined();
+    expect(testToCamel.anArrayOfObjects[0].a_b).toEqual('ab');
+    expect(testToCamel.anArrayOfObjects[0].a_c).toEqual('ac');
+    expect(testToCamel.anObject.a_1).toEqual('a1');
+    expect(testToCamel.anObject.a_2).toEqual('a2');
+    expect(testToCamel.anObject.a_3.b_4).toEqual('b4');
+    expect(testToCamel.aKebab).toEqual('k1');
+  });
+
   it('converts to snake_case', () => {
     const testToSnake = objectToSnake({
       helloWorld: 'helloWorld',
@@ -74,6 +110,32 @@ describe('Property name converter', () => {
     expect(testToSnake.an_object.a1).toEqual('a_1');
     expect(testToSnake.an_object.a2).toEqual('a_2');
     expect(testToSnake.an_object.a3.b4).toEqual('b_4');
+  });
+
+  it('converts to snake_case non-recursively', () => {
+    const testToSnake = objectToSnakeNonRecursive({
+      helloWorld: 'helloWorld',
+      aNumber: 5,
+      anArray: [1, 2, 4],
+      nullObject: null,
+      undefObject: undefined,
+      aNestedObject: {
+        shouldNotConvert: 'hello',
+        SHOULD_NOT_CONVERT_TOO: 'helloToo',
+      },
+    });
+
+    expect('helloWorld' in testToSnake).toStrictEqual(false);
+    expect('hello_world' in testToSnake).toStrictEqual(true);
+    expect(testToSnake.a_number).toEqual(5);
+    expect(testToSnake.hello_world).toEqual('helloWorld');
+    expect(testToSnake.an_array).toEqual([1, 2, 4]);
+    expect(testToSnake.null_object).toBeNull();
+    expect(testToSnake.undef_object).toBeUndefined();
+    expect(testToSnake.a_nested_object.shouldNotConvert).toEqual('hello');
+    expect(testToSnake.a_nested_object.SHOULD_NOT_CONVERT_TOO).toEqual(
+      'helloToo',
+    );
   });
 
   it('converts to PascalCase from camelCase', () => {
@@ -137,6 +199,39 @@ describe('Property name converter', () => {
     expect(testToPascal.AnObject.A1).toEqual('a1');
     expect(testToPascal.AnObject.A2).toEqual('a2');
     expect(testToPascal.AnObject.A3.B4).toEqual('b4');
+    expect(testToPascal.AKebab).toEqual('k1');
+  });
+
+  it('converts to PascalCase from snake_case non-recursively', () => {
+    const testToPascal = objectToPascalNonRecursive({
+      hello_world: 'helloWorld',
+      a_number: 5,
+      an_array: [1, 2, 4],
+      null_object: null,
+      undef_object: undefined,
+      an_array_of_objects: [{ a_b: 'ab', a_c: 'ac' }],
+      an_object: {
+        a_1: 'a1',
+        a_2: 'a2',
+        a_3: {
+          b_4: 'b4',
+        },
+      },
+      ['a-kebab']: 'k1',
+    });
+
+    expect('helloWorld' in testToPascal).toStrictEqual(false);
+    expect('HelloWorld' in testToPascal).toStrictEqual(true);
+    expect(testToPascal.ANumber).toEqual(5);
+    expect(testToPascal.HelloWorld).toEqual('helloWorld');
+    expect(testToPascal.AnArray).toEqual([1, 2, 4]);
+    expect(testToPascal.NullObject).toBeNull();
+    expect(testToPascal.UndefObject).toBeUndefined();
+    expect(testToPascal.AnArrayOfObjects[0].a_b).toEqual('ab');
+    expect(testToPascal.AnArrayOfObjects[0].a_c).toEqual('ac');
+    expect(testToPascal.AnObject.a_1).toEqual('a1');
+    expect(testToPascal.AnObject.a_2).toEqual('a2');
+    expect(testToPascal.AnObject.a_3.b_4).toEqual('b4');
     expect(testToPascal.AKebab).toEqual('k1');
   });
 });

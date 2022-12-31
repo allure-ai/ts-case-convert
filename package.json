@@ -1,9 +1,9 @@
 {
-  "name": "ts-case-convert",
+  "name": "@allure-ai/ts-case-convert",
   "description": "Typescript type-preserving conversion of objects between camelCase and snake_case",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RossWilliams/ts-case-convert.git"
+    "url": "https://github.com/allure-ai/ts-case-convert.git"
   },
   "scripts": {
     "clobber": "npx projen clobber",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
-    "@types/node": "^10.17.0",
+    "@types/node": "^18.11.18",
     "@typescript-eslint/eslint-plugin": "^4.28.1",
     "@typescript-eslint/parser": "^4.28.1",
     "eslint": "^7.29.0",

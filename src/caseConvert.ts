@@ -2,43 +2,57 @@ function convertObject<
   TInput extends object,
   TResult extends
     | ObjectToCamel<TInput>
+    | ObjectToCamelNonRecursive<TInput>
     | ObjectToSnake<TInput>
-    | ObjectToPascal<TInput>,
->(obj: TInput, keyConverter: (arg: string) => string): TResult {
+    | ObjectToSnakeNonRecursive<TInput>
+    | ObjectToPascal<TInput>
+    | ObjectToPascalNonRecursive<TInput>,
+>(
+  obj: TInput,
+  keyConverter: (arg: string) => string,
+  recursive: boolean = true,
+): TResult {
   if (obj === null || typeof obj === 'undefined' || typeof obj !== 'object') {
     return obj;
   }
 
   const out = (Array.isArray(obj) ? [] : {}) as TResult;
   for (const [k, v] of Object.entries(obj)) {
-    // eslint-disable-next-line
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    out[keyConverter(k)] = Array.isArray(v)
-      ? (v.map(<ArrayItem extends object>(item: ArrayItem) =>
-          typeof item === 'object' && !Buffer.isBuffer(item)
-            ? convertObject<
-                ArrayItem,
-                TResult extends ObjectToCamel<TInput>
-                  ? ObjectToCamel<ArrayItem>
-                  : TResult extends ObjectToPascal<TInput>
-                  ? ObjectToPascal<ArrayItem>
-                  : ObjectToSnake<ArrayItem>
-              >(item, keyConverter)
-            : item,
-        ) as unknown[])
-      : Buffer.isBuffer(v)
-      ? v
-      : typeof v === 'object'
-      ? convertObject<
-          typeof v,
-          TResult extends ObjectToCamel<TInput>
-            ? ObjectToCamel<typeof v>
-            : TResult extends ObjectToPascal<TInput>
-            ? ObjectToPascal<typeof v>
-            : ObjectToSnake<typeof v>
-        >(v, keyConverter)
-      : (v as unknown);
+    if (!recursive) {
+      // eslint-disable-next-line
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      out[keyConverter(k)] = v;
+    } else {
+      // eslint-disable-next-line
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      out[keyConverter(k)] = Array.isArray(v)
+        ? (v.map(<ArrayItem extends object>(item: ArrayItem) =>
+            typeof item === 'object' && !Buffer.isBuffer(item)
+              ? convertObject<
+                  ArrayItem,
+                  TResult extends ObjectToCamel<TInput>
+                    ? ObjectToCamel<ArrayItem>
+                    : TResult extends ObjectToPascal<TInput>
+                    ? ObjectToPascal<ArrayItem>
+                    : ObjectToSnake<ArrayItem>
+                >(item, keyConverter)
+              : item,
+          ) as unknown[])
+        : Buffer.isBuffer(v)
+        ? v
+        : typeof v === 'object'
+        ? convertObject<
+            typeof v,
+            TResult extends ObjectToCamel<TInput>
+              ? ObjectToCamel<typeof v>
+              : TResult extends ObjectToPascal<TInput>
+              ? ObjectToPascal<typeof v>
+              : ObjectToSnake<typeof v>
+          >(v, keyConverter)
+        : (v as unknown);
+    }
   }
   return out;
 }
@@ -55,6 +69,12 @@ export function toCamel<T extends string>(term: T): ToCamel<T> {
 
 export function objectToCamel<T extends object>(obj: T): ObjectToCamel<T> {
   return convertObject(obj, toCamel);
+}
+
+export function objectToCamelNonRecursive<T extends object>(
+  obj: T,
+): ObjectToCamelNonRecursive<T> {
+  return convertObject(obj, toCamel, false);
 }
 
 export function toSnake<T extends string>(term: T): ToSnake<T> {
@@ -93,6 +113,12 @@ export function objectToSnake<T extends object>(obj: T): ObjectToSnake<T> {
   return convertObject(obj, toSnake);
 }
 
+export function objectToSnakeNonRecursive<T extends object>(
+  obj: T,
+): ObjectToSnakeNonRecursive<T> {
+  return convertObject(obj, toSnake, false);
+}
+
 export function toPascal<T extends string>(term: T): ToPascal<T> {
   return toCamel(term).replace(/^([a-z])/, (m) =>
     m[0].toUpperCase(),
@@ -101,6 +127,12 @@ export function toPascal<T extends string>(term: T): ToPascal<T> {
 
 export function objectToPascal<T extends object>(obj: T): ObjectToPascal<T> {
   return convertObject(obj, toPascal);
+}
+
+export function objectToPascalNonRecursive<T extends object>(
+  obj: T,
+): ObjectToPascalNonRecursive<T> {
+  return convertObject(obj, toPascal, false);
 }
 
 export type ToCamel<S extends string | number | symbol> = S extends string
@@ -135,6 +167,24 @@ export type ObjectToCamel<T extends object | undefined | null> =
           : T[K];
       };
 
+export type ObjectToCamelNonRecursive<T extends object | undefined | null> =
+  T extends undefined
+    ? undefined
+    : T extends null
+    ? null
+    : T extends Array<infer ArrayType>
+    ? Array<ArrayType>
+    : T extends Buffer
+    ? Buffer
+    : {
+        [K in keyof T as ToCamel<K>]: T[K] extends
+          | Array<infer ArrayType>
+          | undefined
+          | null
+          ? Array<ArrayType>
+          : T[K];
+      };
+
 export type ToPascal<S extends string | number | symbol> = S extends string
   ? S extends `${infer Head}_${infer Tail}`
     ? `${Capitalize<ToCamel<Head>>}${Capitalize<ToCamel<Tail>>}`
@@ -164,6 +214,24 @@ export type ObjectToPascal<T extends object | undefined | null> =
             : Array<ArrayType>
           : T[K] extends object | undefined | null
           ? ObjectToPascal<T[K]>
+          : T[K];
+      };
+
+export type ObjectToPascalNonRecursive<T extends object | undefined | null> =
+  T extends undefined
+    ? undefined
+    : T extends null
+    ? null
+    : T extends Array<infer ArrayType>
+    ? Array<ArrayType>
+    : T extends Buffer
+    ? Buffer
+    : {
+        [K in keyof T as ToPascal<K>]: T[K] extends
+          | Array<infer ArrayType>
+          | undefined
+          | null
+          ? Array<ArrayType>
           : T[K];
       };
 
@@ -230,6 +298,24 @@ export type ObjectToSnake<T extends object | undefined | null> =
             : Array<ArrayType>
           : T[K] extends object | undefined | null
           ? ObjectToSnake<T[K]>
+          : T[K];
+      };
+
+export type ObjectToSnakeNonRecursive<T extends object | undefined | null> =
+  T extends undefined
+    ? undefined
+    : T extends null
+    ? null
+    : T extends Array<infer ArrayType>
+    ? Array<ArrayType>
+    : T extends Buffer
+    ? Buffer
+    : {
+        [K in keyof T as ToSnake<K>]: T[K] extends
+          | Array<infer ArrayType>
+          | undefined
+          | null
+          ? Array<ArrayType>
           : T[K];
       };
 
