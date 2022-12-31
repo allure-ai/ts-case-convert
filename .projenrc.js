@@ -7,7 +7,7 @@ const {
 const project = new TypeScriptProject({
   defaultReleaseBranch: 'main',
   jsiiFqn: 'projen.TypeScriptProject',
-  name: 'ts-case-convert',
+  name: '@allure-ai/ts-case-convert',
   authorEmail: 'ross@UniversalConstructor.co.uk',
   authorName: 'Ross Williams',
   authorOrganization: 'Universal Constructor',
@@ -25,7 +25,7 @@ const project = new TypeScriptProject({
     'pascal-case',
   ],
   packageManager: NodePackageManager.YARN,
-  repository: 'https://github.com/RossWilliams/ts-case-convert.git',
+  repository: 'https://github.com/allure-ai/ts-case-convert.git',
   codeCov: true,
   codeCovTokenSecret: 'CODECOV_TOKEN',
   releaseToNpm: true,
